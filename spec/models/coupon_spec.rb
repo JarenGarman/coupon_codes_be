@@ -10,5 +10,6 @@ describe Coupon, type: :model do
 
   describe "relationships" do
     it { is_expected.to belong_to :merchant }
+    it { is_expected.to have_many :invoice }
   end
 end
