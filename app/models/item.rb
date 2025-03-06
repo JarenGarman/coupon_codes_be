@@ -7,7 +7,7 @@ class Item < ApplicationRecord
   # has_many :invoices, through: :invoice_items
 
   def self.sort_by_price
-    self.order(unit_price: :asc)
+    order(unit_price: :asc)
   end
 
   def self.find_one_item_by_name(name)
