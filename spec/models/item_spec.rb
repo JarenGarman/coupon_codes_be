@@ -35,9 +35,9 @@ describe Item, type: :model do
     end
 
     it "returns the one item that satisfies the price query, ordering by name if necessary" do
-      item1 = create(:item, name: "grapes", unit_price: 4.99, merchant: merchant)
-      item2 = create(:item, name: "oreos", unit_price: 1.05, merchant: merchant)
-      item3 = create(:item, name: "bananas", unit_price: 15.50, merchant: merchant)
+      create(:item, name: "grapes", unit_price: 4.99, merchant: merchant)
+      create(:item, name: "oreos", unit_price: 1.05, merchant: merchant)
+      create(:item, name: "bananas", unit_price: 15.50, merchant: merchant)
 
       expect(Item.find_one_item_by_price(max_price: 5).name).to eq("grapes") # G before O
       expect(Item.find_one_item_by_price(min_price: 1.0, max_price: 2).name).to eq("oreos")
