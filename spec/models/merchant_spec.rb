@@ -1,18 +1,18 @@
-require 'rails_helper'
+require "rails_helper"
 
 describe Merchant, type: :model do
-  describe 'validations' do
-    it { should validate_presence_of(:name)}
+  describe "validations" do
+    it { is_expected.to validate_presence_of(:name) }
   end
 
-  describe 'relationships' do
-    it { should have_many :items }
-    it { should have_many :invoices }
-    it { should have_many(:customers).through(:invoices) }
+  describe "relationships" do
+    it { is_expected.to have_many :items }
+    it { is_expected.to have_many :invoices }
+    it { is_expected.to have_many(:customers).through(:invoices) }
   end
 
   describe "class methods" do
-    it "should sort merchants by created_at" do
+    it "sorts merchants by created_at" do
       merchant1 = create(:merchant, created_at: 1.day.ago)
       merchant2 = create(:merchant, created_at: 4.days.ago)
       merchant3 = create(:merchant, created_at: 2.days.ago)
@@ -20,7 +20,7 @@ describe Merchant, type: :model do
       expect(Merchant.sorted_by_creation).to eq([merchant1, merchant3, merchant2])
     end
 
-    it "should filter merchants by status of invoices" do
+    it "filters merchants by status of invoices" do
       merchant1 = create(:merchant)
       merchant2 = create(:merchant)
       customer = create(:customer)
@@ -34,7 +34,7 @@ describe Merchant, type: :model do
       expect(Merchant.filter_by_status("shipped")).to match_array([merchant1, merchant2])
     end
 
-    it "should retrieve merchant when searching by name" do
+    it "retrieves merchant when searching by name" do
       merchant1 = Merchant.create!(name: "Turing")
       merchant2 = Merchant.create!(name: "ring world")
       merchant3 = Merchant.create!(name: "Vera Wang")
