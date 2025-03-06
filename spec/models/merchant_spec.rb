@@ -37,7 +37,7 @@ describe Merchant, type: :model do
     it "retrieves merchant when searching by name" do
       merchant1 = Merchant.create!(name: "Turing")
       merchant2 = Merchant.create!(name: "ring world")
-      merchant3 = Merchant.create!(name: "Vera Wang")
+      Merchant.create!(name: "Vera Wang")
 
       expect(Merchant.find_one_merchant_by_name("ring")).to eq(merchant2)
       expect(Merchant.find_all_by_name("ring")).to eq([merchant1, merchant2])
