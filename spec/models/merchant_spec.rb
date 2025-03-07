@@ -43,6 +43,15 @@ describe Merchant, type: :model do
       expect(Merchant.find_one_merchant_by_name("ring")).to eq(merchant2)
       expect(Merchant.find_all_by_name("ring")).to eq([merchant1, merchant2])
     end
+
+    it "adds count of coupons and invoices with coupons" do
+      merchant = create(:merchant)
+      coupons = create_list(:coupon, 3, merchant: merchant)
+      create_list(:invoice, 2, merchant: merchant, coupon: coupons.first)
+
+      expect(Merchant.with_coupons.find(merchant.id).coupons_count).to eq(3)
+      expect(Merchant.with_coupons.find(merchant.id).invoice_coupon_count).to eq(2)
+    end
   end
 
   describe "instance methods" do
