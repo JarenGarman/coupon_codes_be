@@ -71,6 +71,7 @@ RSpec.describe "Merchant coupons endpoints" do
         expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
         expect(coupon[:attributes][:value]).to be_a(Float)
         expect(coupon[:attributes][:active?]).to be(true).or be(false)
+        expect(coupon[:attributes][:use_count]).to eq(0)
       end
     end
   end
