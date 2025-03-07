@@ -75,4 +75,108 @@ RSpec.describe "Merchant coupons endpoints" do
       expect(json[:errors].first).to eq("Couldn't find Coupon with 'id'=0 [WHERE \"coupons\".\"merchant_id\" = $1]")
     end
   end
+
+  describe "create" do
+    it "returns 201 with coupon for successful creation" do
+      merchant = create(:merchant)
+      coupon_params = {
+        name: Faker::Commerce.promotion_code(digits: 2),
+        code: Faker::Commerce.unique.promotion_code,
+        discount_type: ["percent", "flat"].sample,
+        value: Faker::Commerce.price(range: 0.01..99.99)
+      }
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      post "/api/v1/merchants/#{merchant.id}/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response.code).to eq(201)
+      expect(json[:data]).to be_a(Hash)
+      expect(json[:data][:id]).to eq(coupon_params[:id].to_s)
+      expect(json[:data][:type]).to eq("coupon")
+      expect(json[:data][:attributes]).to include(
+        name: coupon_params[:name],
+        code: coupon_params[:code],
+        discount_type: coupon_params[:discount_type],
+        value: coupon_params[:value],
+        active?: true
+      )
+    end
+
+    it "returns 404 with error message when merchant is not found" do
+      coupon_params = {
+        name: Faker::Commerce.promotion_code(digits: 2),
+        code: Faker::Commerce.unique.promotion_code,
+        discount_type: ["percent", "flat"].sample,
+        value: Faker::Commerce.price(range: 0.01..99.99)
+      }
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      post "/api/v1/merchants/100000/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to have_http_status(:not_found)
+      expect(json[:message]).to eq("Your query could not be completed")
+      expect(json[:errors]).to be_a Array
+      expect(json[:errors].first).to eq("Couldn't find Merchant with 'id'=100000")
+    end
+
+    it "returns 400 with error message when merchant has 5 active coupons" do
+      merchant = create(:merchant)
+      create_list(:coupon, 5, merchant: merchant)
+      coupon_params = {
+        name: Faker::Commerce.promotion_code(digits: 2),
+        code: Faker::Commerce.unique.promotion_code,
+        discount_type: ["percent", "flat"].sample,
+        value: Faker::Commerce.price(range: 0.01..99.99)
+      }
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      post "/api/v1/merchants/#{merchant.id}/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to have_http_status(:bad_request)
+      # expect(json[:message]).to eq("Placeholder error message")
+      expect(json[:errors]).to be_a Array
+      # expect(json[:errors].first).to eq("Placeholder error message")
+    end
+
+    it "returns 400 with error message when code is not unique" do
+      merchant = create(:merchant)
+      coupon = create(:coupon, merchant: merchant)
+      coupon_params = {
+        name: Faker::Commerce.promotion_code(digits: 2),
+        code: coupon.code,
+        discount_type: ["percent", "flat"].sample,
+        value: Faker::Commerce.price(range: 0.01..99.99)
+      }
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      post "/api/v1/merchants/#{merchant.id}/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to have_http_status(:bad_request)
+      # expect(json[:message]).to eq("Placeholder error message")
+      expect(json[:errors]).to be_a Array
+      # expect(json[:errors].first).to eq("Placeholder error message")
+    end
+
+    it "returns 400 with error message when params not provided" do
+      merchant = create(:merchant)
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      post "/api/v1/merchants/#{merchant.id}/coupons", headers: headers, params: JSON.generate(coupon: {})
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to have_http_status(:bad_request)
+      # expect(json[:message]).to eq("Placeholder error message")
+      expect(json[:errors]).to be_a Array
+      # expect(json[:errors].first).to eq("Placeholder error message")
+    end
+  end
 end
