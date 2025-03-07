@@ -61,7 +61,7 @@ RSpec.describe "Merchant coupons endpoints" do
 
       expect(response).to be_successful
       expect(json[:data]).to be_an(Array)
-      expect(json[:data].length).to eq(5)
+      expect(json[:data].length).to eq(10)
       json[:data].each do |coupon|
         expect(coupon[:id]).to be_a(String)
         expect(coupon[:type]).to eq("coupon")
