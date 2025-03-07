@@ -6,6 +6,7 @@ class CreateCoupons < ActiveRecord::Migration[7.1]
       t.string :discount_type
       t.float :value
       t.boolean :active?
+      t.integer :use_count
 
       t.timestamps
     end

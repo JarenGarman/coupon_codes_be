@@ -15,6 +15,8 @@ describe Coupon, type: :model do
     it { is_expected.to validate_numericality_of :value }
     it { is_expected.to validate_presence_of :active? }
     it { is_expected.to validate_inclusion_of(:active?).in_array([true, false]) }
+    it { is_expected.to validate_presence_of :use_count }
+    it { is_expected.to validate_numericality_of :use_count }
   end
 
   describe "relationships" do
