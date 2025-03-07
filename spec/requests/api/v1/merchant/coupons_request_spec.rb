@@ -69,7 +69,7 @@ RSpec.describe "Merchant coupons endpoints" do
         expect(coupon[:attributes][:name]).to be_a(String)
         expect(coupon[:attributes][:code]).to be_a(String)
         expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
-        expect(coupon[:attributes][:code]).to be_a(Float)
+        expect(coupon[:attributes][:value]).to be_a(Float)
         expect(coupon[:attributes][:active?]).to be(true).or be(false)
       end
     end
