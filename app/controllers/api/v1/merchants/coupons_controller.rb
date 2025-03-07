@@ -35,7 +35,7 @@ class Api::V1::Merchants::CouponsController < ApplicationController
         render json: ErrorSerializer.too_many_active_coupons_response, status: :bad_request
         return
       end
-    elsif pending_invoices?(coupon)
+    elsif update_params[:active?] == false && pending_invoices?(coupon)
       render json: ErrorSerializer.pending_invoices_response, status: :bad_request
       return
     end
@@ -55,7 +55,7 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   def update_params
     params
       .require(:coupon)
-      .permit(:active?)
+      .permit(:name, :code, :discount_type, :value, :active?)
   end
 
   def active_merchant_coupons(merchant)
