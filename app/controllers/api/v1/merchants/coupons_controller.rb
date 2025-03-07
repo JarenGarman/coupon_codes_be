@@ -16,7 +16,6 @@ class Api::V1::Merchants::CouponsController < ApplicationController
       return
     end
     coupon = merchant.coupons.create!(coupon_params) # safe to use create! here because our exception handler will gracefully handle exception
-    raise ActiveRecord::RecordInvalid.new unless coupon
     render json: CouponSerializer.new(coupon), status: :created
   end
 
