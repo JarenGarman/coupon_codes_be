@@ -4,7 +4,7 @@ RSpec.describe "Merchant coupons endpoints" do
   describe "index" do
     it "returns all coupons for merchant" do
       merchant = create(:merchant)
-      create_list(:coupon, 10, active?: false, merchant: merchant)
+      create_list(:coupon, 10, active: false, merchant: merchant)
       create_list(:coupon, 5, merchant: merchant)
 
       get "/api/v1/merchants/#{merchant.id}/coupons"
@@ -21,14 +21,14 @@ RSpec.describe "Merchant coupons endpoints" do
         expect(coupon[:attributes][:code]).to be_a(String)
         expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
         expect(coupon[:attributes][:value]).to be_a(Float)
-        expect(coupon[:attributes][:active?]).to be(true).or be(false)
+        expect(coupon[:attributes][:active]).to be(true).or be(false)
         expect(coupon[:attributes][:use_count]).to eq(0)
       end
     end
 
     it "can return only active coupons" do
       merchant = create(:merchant)
-      create_list(:coupon, 10, active?: false, merchant: merchant)
+      create_list(:coupon, 10, active: false, merchant: merchant)
       create_list(:coupon, 5, merchant: merchant)
 
       get "/api/v1/merchants/#{merchant.id}/coupons?active=true"
@@ -45,14 +45,14 @@ RSpec.describe "Merchant coupons endpoints" do
         expect(coupon[:attributes][:code]).to be_a(String)
         expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
         expect(coupon[:attributes][:value]).to be_a(Float)
-        expect(coupon[:attributes][:active?]).to be(true)
+        expect(coupon[:attributes][:active]).to be(true)
         expect(coupon[:attributes][:use_count]).to eq(0)
       end
     end
 
     it "can return only inactive coupons" do
       merchant = create(:merchant)
-      create_list(:coupon, 10, active?: false, merchant: merchant)
+      create_list(:coupon, 10, active: false, merchant: merchant)
       create_list(:coupon, 5, merchant: merchant)
 
       get "/api/v1/merchants/#{merchant.id}/coupons?active=false"
@@ -69,7 +69,7 @@ RSpec.describe "Merchant coupons endpoints" do
         expect(coupon[:attributes][:code]).to be_a(String)
         expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
         expect(coupon[:attributes][:value]).to be_a(Float)
-        expect(coupon[:attributes][:active?]).to be(false)
+        expect(coupon[:attributes][:active]).to be(false)
         expect(coupon[:attributes][:use_count]).to eq(0)
       end
     end
@@ -94,7 +94,7 @@ RSpec.describe "Merchant coupons endpoints" do
         code: coupon.code,
         discount_type: coupon.discount_type,
         value: coupon.value,
-        active?: coupon.active?,
+        active: coupon.active,
         use_count: 0
       )
     end
@@ -148,7 +148,7 @@ RSpec.describe "Merchant coupons endpoints" do
         code: coupon_params[:code],
         discount_type: coupon_params[:discount_type],
         value: coupon_params[:value],
-        active?: true
+        active: true
       )
     end
 
@@ -258,7 +258,7 @@ RSpec.describe "Merchant coupons endpoints" do
         code: coupon_params[:code],
         discount_type: coupon_params[:discount_type],
         value: coupon_params[:value],
-        active?: true
+        active: true
       )
     end
 
@@ -267,7 +267,7 @@ RSpec.describe "Merchant coupons endpoints" do
       coupon = create(:coupon, merchant: merchant)
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active?: false})
+      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active: false})
 
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -280,16 +280,16 @@ RSpec.describe "Merchant coupons endpoints" do
         code: coupon.code,
         discount_type: coupon.discount_type,
         value: coupon.value,
-        active?: false
+        active: false
       )
     end
 
     it "can activate a coupon" do
       merchant = create(:merchant)
-      coupon = create(:coupon, merchant: merchant, active?: false)
+      coupon = create(:coupon, merchant: merchant, active: false)
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active?: true})
+      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active: true})
 
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -302,17 +302,17 @@ RSpec.describe "Merchant coupons endpoints" do
         code: coupon.code,
         discount_type: coupon.discount_type,
         value: coupon.value,
-        active?: true
+        active: true
       )
     end
 
     it "returns 400 with error message when merchant has 5 active coupons" do
       merchant = create(:merchant)
       create_list(:coupon, 5, merchant: merchant)
-      coupon = create(:coupon, merchant: merchant, active?: false)
+      coupon = create(:coupon, merchant: merchant, active: false)
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active?: true})
+      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active: true})
 
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -327,7 +327,7 @@ RSpec.describe "Merchant coupons endpoints" do
       coupon = create(:coupon, merchant: merchant)
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      patch "/api/v1/merchants/100000/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active?: false})
+      patch "/api/v1/merchants/100000/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active: false})
 
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -341,7 +341,7 @@ RSpec.describe "Merchant coupons endpoints" do
       merchant = create(:merchant)
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      patch "/api/v1/merchants/#{merchant.id}/coupons/0", headers: headers, params: JSON.generate(coupon: {active?: false})
+      patch "/api/v1/merchants/#{merchant.id}/coupons/0", headers: headers, params: JSON.generate(coupon: {active: false})
 
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -372,7 +372,7 @@ RSpec.describe "Merchant coupons endpoints" do
       create(:invoice, status: "packaged", merchant: merchant, coupon: coupon)
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active?: false})
+      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active: false})
 
       json = JSON.parse(response.body, symbolize_names: true)
 

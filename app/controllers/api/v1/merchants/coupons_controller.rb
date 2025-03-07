@@ -30,12 +30,12 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   def update
     merchant = Merchant.find(params[:merchant_id])
     coupon = merchant.coupons.find(params[:id])
-    if update_params[:active?] == true
+    if update_params[:active] == true
       if active_merchant_coupons(merchant) >= 5
         render json: ErrorSerializer.too_many_active_coupons_response, status: :bad_request
         return
       end
-    elsif update_params[:active?] == false && pending_invoices?(coupon)
+    elsif update_params[:active] == false && pending_invoices?(coupon)
       render json: ErrorSerializer.pending_invoices_response, status: :bad_request
       return
     end
@@ -49,18 +49,18 @@ class Api::V1::Merchants::CouponsController < ApplicationController
     params
       .require(:coupon)
       .permit(:name, :code, :discount_type, :value)
-      .with_defaults(active?: true)
+      .with_defaults(active: true)
   end
 
   def update_params
     params
       .require(:coupon)
-      .permit(:name, :code, :discount_type, :value, :active?)
+      .permit(:name, :code, :discount_type, :value, :active)
   end
 
   def active_merchant_coupons(merchant)
     merchant.coupons.count do |coupon|
-      coupon.active?
+      coupon.active
     end
   end
 

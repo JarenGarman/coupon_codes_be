@@ -4,7 +4,7 @@ FactoryBot.define do
     code { Faker::Commerce.unique.promotion_code }
     discount_type { ["percent", "flat"].sample }
     value { Faker::Commerce.price(range: 0.01..99.99) }
-    active? { true }
+    active { true }
     merchant
   end
 end
