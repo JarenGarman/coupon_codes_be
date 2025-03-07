@@ -4,15 +4,13 @@ class Merchant < ApplicationRecord
   has_many :invoices, dependent: :destroy
   has_many :customers, through: :invoices
   has_many :coupons
-  # has_many :invoice_items, through: :invoices
-  # has_many :transactions, through: :invoices
 
   def self.sorted_by_creation
     Merchant.order("created_at DESC")
   end
 
   def self.filter_by_status(status)
-    joins(:invoices).where("invoices.status = ?", status).select("distinct merchants.*")
+    joins(:invoices).where(invoices: {status: status}).select("distinct merchants.*")
   end
 
   def item_count
@@ -20,16 +18,10 @@ class Merchant < ApplicationRecord
   end
 
   def distinct_customers
-    # self.customers.distinct # This is possible due to the additional association on line 5
-
-    # SQL option: SELECT DISTINCT * FROM customers JOIN invoices ON invoices.customer_id = customers.id
-    #             JOIN merchants ON merchants.id = invoices.customer_id
-    #             WHERE merchants.id = #{self.id}"
-
-    # AR option without additional association
     Customer
       .joins(invoices: :merchant)
-      .where("merchants.id = ?", id).distinct
+      .where(merchants: {id: id})
+      .distinct
   end
 
   def invoices_filtered_by_status(status)

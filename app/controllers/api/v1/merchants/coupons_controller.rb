@@ -9,12 +9,12 @@ class Api::V1::Merchants::CouponsController < ApplicationController
     if params[:active] && ["true", "false"].include?(params[:active].downcase)
       coupons = coupons.active_filter(params[:active].downcase)
     end
-    render json: CouponSerializer.new(coupons.with_use_count)
+    render json: CouponSerializer.new(coupons)
   end
 
   def show
     merchant = Merchant.find(params[:merchant_id])
-    render json: CouponSerializer.new(merchant.coupons.with_use_count.find(params[:id]))
+    render json: CouponSerializer.new(merchant.coupons.find(params[:id]))
   end
 
   def create
@@ -29,7 +29,7 @@ class Api::V1::Merchants::CouponsController < ApplicationController
 
   def update
     merchant = Merchant.find(params[:merchant_id])
-    coupon = merchant.coupons.with_use_count.find(params[:id])
+    coupon = merchant.coupons.find(params[:id])
     if update_params[:active?] == true
       if active_merchant_coupons(merchant) >= 5
         render json: ErrorSerializer.too_many_active_coupons_response, status: :bad_request

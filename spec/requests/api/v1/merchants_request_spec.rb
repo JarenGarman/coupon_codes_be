@@ -1,9 +1,12 @@
 require "rails_helper"
 
-describe "Merchant endpoints", :type => :request do
+describe "Merchant endpoints", type: :request do
   describe "Get all merchants" do
-    it "should return a properly array of merchants" do
-      create_list(:merchant, 5)
+    it "returns a properly array of merchants" do
+      merchant = create(:merchant)
+      coupons = create_list(:coupon, 3, merchant: merchant)
+      create_list(:invoice, 2, merchant: merchant, coupon: coupons.first)
+      create_list(:merchant, 4)
       get "/api/v1/merchants"
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -12,9 +15,11 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:data].count).to eq(5)
       expect(json[:data].first).to include(:id, :type, :attributes)
       expect(json[:data].first[:attributes]).to include(:name)
+      expect(json[:data].first[:attributes][:coupons_count]).to eq(3)
+      expect(json[:data].first[:attributes][:invoice_coupon_count]).to eq(2)
     end
 
-    it "should return a data key even when there are no merchants to return" do
+    it "returns a data key even when there are no merchants to return" do
       get "/api/v1/merchants"
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -23,7 +28,7 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:data]).to be_empty
     end
 
-    it "should return merchants sorted newest to oldest when sent sort param" do
+    it "returns merchants sorted newest to oldest when sent sort param" do
       middle = Merchant.create!(name: "old merchant")
       first = Merchant.create!(name: "newer merchant")
       last = create(:merchant, created_at: 1.day.ago)
@@ -37,7 +42,7 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:data][2][:attributes][:name]).to eq(last.name)
     end
 
-    it "should return merchants with invoices with status of returned when parameter is present" do
+    it "returns merchants with invoices with status of returned when parameter is present" do
       customer = Customer.create!(first_name: "John", last_name: "Doe")
       merchant1 = Merchant.create!(name: "Merchant1")
       merchant2 = Merchant.create!(name: "Merchant2")
@@ -55,7 +60,7 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:data][0][:id]).to eq(merchant1.id.to_s)
     end
 
-    it "should return an item_count attribute when the param is present" do
+    it "returns an item_count attribute when the param is present" do
       # This test uses FactoryBot methods to create a lot of test data quickly with random attributes
       # You do not need to use these factory bot methods in your project but you're welcome to try it.
       merchant = create(:merchant)
@@ -78,7 +83,7 @@ describe "Merchant endpoints", :type => :request do
   end
 
   describe "get a merchant by id" do
-    it "should return a single merchant with the correct id" do
+    it "returns a single merchant with the correct id" do
       merchant = Merchant.create!(name: "Joe & Sons")
       get "/api/v1/merchants/#{merchant.id}"
       json = JSON.parse(response.body, symbolize_names: true)
@@ -91,7 +96,7 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:data][:attributes][:name]).to eq(merchant.name)
     end
 
-    it "should return 404 and error message when merchant is not found" do
+    it "returns 404 and error message when merchant is not found" do
       get "/api/v1/merchants/100"
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -103,7 +108,7 @@ describe "Merchant endpoints", :type => :request do
   end
 
   describe "create a merchant" do
-    it "should successfully create when name is present" do
+    it "successfullies create when name is present" do
       name = "Crafty Coders"
       body = {
         name: name
@@ -119,8 +124,7 @@ describe "Merchant endpoints", :type => :request do
       expect(Merchant.last.name).to eq(name)
     end
 
-    it "should display an error message if not all fields are present" do
-
+    it "displays an error message if not all fields are present" do
       post "/api/v1/merchants", params: {}, as: :json
       json = JSON.parse(response.body, symbolize_names: true)
 
@@ -128,7 +132,7 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:errors].first).to eq("Validation failed: Name can't be blank")
     end
 
-    it "should ignore unnecessary fields" do
+    it "ignores unnecessary fields" do
       body = {
         name: "Crafty Coders",
         address: "test",
@@ -140,13 +144,13 @@ describe "Merchant endpoints", :type => :request do
       json = JSON.parse(response.body, symbolize_names: true)
 
       expect(response).to have_http_status(:created)
-      expect(json[:data][:attributes]).to_not include(:extra_field)
+      expect(json[:data][:attributes]).not_to include(:extra_field)
       expect(json[:data][:attributes]).to include(:name)
     end
   end
 
   describe "Update merchant" do
-    it "should properly update an existing merchant" do
+    it "properlies update an existing merchant" do
       merchant = create(:merchant)
       new_name = "new name"
       body = {
@@ -160,7 +164,7 @@ describe "Merchant endpoints", :type => :request do
       expect(Merchant.find(merchant.id).name).to eq(new_name)
     end
 
-    it "should return 404 when id provided is not valid" do
+    it "returns 404 when id provided is not valid" do
       body = {
         name: "new name"
       }
@@ -174,7 +178,7 @@ describe "Merchant endpoints", :type => :request do
   end
 
   describe "Delete Merchant" do
-    it "should delete a merchant by id" do
+    it "deletes a merchant by id" do
       merchant = create(:merchant)
 
       delete "/api/v1/merchants/#{merchant.id}"
@@ -183,23 +187,22 @@ describe "Merchant endpoints", :type => :request do
       expect(Merchant.find_by(id: merchant.id)).to be_nil
     end
 
-    it "should return 404 if id is invalid" do
+    it "returns 404 if id is invalid" do
       delete "/api/v1/merchants/678"
       json = JSON.parse(response.body, symbolize_names: true)
       expect(response).to have_http_status(:not_found)
       expect(json[:errors].first).to eq("Couldn't find Merchant with 'id'=678")
     end
 
-    it "should successfully delete merchant and use cascading deletes if merchant has child records" do
+    it "successfullies delete merchant and use cascading deletes if merchant has child records" do
       merchant = create(:merchant)
       customer = create(:customer)
       invoices = create_list(:invoice, 5, merchant_id: merchant.id, customer_id: customer.id)
       items = create_list(:item, 5, merchant_id: merchant.id)
       InvoiceItem.create!(invoice: invoices[0], item: items[0], quantity: 5, unit_price: 100)
       delete "/api/v1/merchants/#{merchant.id}"
-      
+
       expect(response).to have_http_status(:no_content)
     end
-
   end
 end
