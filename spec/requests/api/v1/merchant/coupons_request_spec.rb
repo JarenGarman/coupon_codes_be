@@ -1,6 +1,32 @@
 require "rails_helper"
 
 RSpec.describe "Merchant coupons endpoints" do
+  describe "index" do
+    it "returns all coupons for merchant" do
+      merchant = create(:merchant)
+      create_list(:coupon, 10, active?: false, merchant: merchant)
+      create_list(:coupon, 5, merchant: merchant)
+
+      get "/api/v1/merchants/#{merchant.id}/coupons"
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(json[:data]).to be_an(Array)
+      expect(json[:data].length).to eq(15)
+      json[:data].each do |coupon|
+        expect(coupon[:id]).to be_a(String)
+        expect(coupon[:type]).to eq("coupon")
+        expect(coupon[:attributes][:name]).to be_a(String)
+        expect(coupon[:attributes][:code]).to be_a(String)
+        expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
+        expect(coupon[:attributes][:value]).to be_a(Float)
+        expect(coupon[:attributes][:active?]).to be(true).or be(false)
+        expect(coupon[:attributes][:use_count]).to eq(0)
+      end
+    end
+  end
+
   describe "show" do
     it "returns a coupon for a given merchant" do
       merchant = create(:merchant)
@@ -47,32 +73,6 @@ RSpec.describe "Merchant coupons endpoints" do
       expect(json[:message]).to eq("Your query could not be completed")
       expect(json[:errors]).to be_a Array
       expect(json[:errors].first).to eq("Couldn't find Coupon with 'id'=0 [WHERE \"coupons\".\"merchant_id\" = $1]")
-    end
-  end
-
-  describe "index" do
-    it "returns all coupons for merchant" do
-      merchant = create(:merchant)
-      create_list(:coupon, 10, active?: false, merchant: merchant)
-      create_list(:coupon, 5, merchant: merchant)
-
-      get "/api/v1/merchants/#{merchant.id}/coupons"
-
-      json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(response).to be_successful
-      expect(json[:data]).to be_an(Array)
-      expect(json[:data].length).to eq(15)
-      json[:data].each do |coupon|
-        expect(coupon[:id]).to be_a(String)
-        expect(coupon[:type]).to eq("coupon")
-        expect(coupon[:attributes][:name]).to be_a(String)
-        expect(coupon[:attributes][:code]).to be_a(String)
-        expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
-        expect(coupon[:attributes][:value]).to be_a(Float)
-        expect(coupon[:attributes][:active?]).to be(true).or be(false)
-        expect(coupon[:attributes][:use_count]).to eq(0)
-      end
     end
   end
 end
