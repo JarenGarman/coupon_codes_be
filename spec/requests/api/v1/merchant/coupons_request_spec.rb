@@ -230,6 +230,22 @@ RSpec.describe "Merchant coupons endpoints" do
       )
     end
 
+    it "returns 400 with error message when merchant has 5 active coupons" do
+      merchant = create(:merchant)
+      create_list(:coupon, 5, merchant: merchant)
+      coupon = create(:coupon, merchant: merchant, active?: false)
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active?: true})
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to have_http_status(:bad_request)
+      expect(json[:message]).to eq("Your query could not be completed")
+      expect(json[:errors]).to be_a Array
+      expect(json[:errors].first).to eq("This merchant already has 5 active coupons")
+    end
+
     it "returns 404 and error message when merchant is not found" do
       merchant = create(:merchant)
       coupon = create(:coupon, merchant: merchant)
