@@ -15,12 +15,22 @@ describe Coupon, type: :model do
     it { is_expected.to validate_numericality_of :value }
     it { is_expected.to validate_presence_of :active? }
     it { is_expected.to validate_inclusion_of(:active?).in_array([true, false]) }
-    it { is_expected.to validate_presence_of :use_count }
-    it { is_expected.to validate_numericality_of :use_count }
   end
 
   describe "relationships" do
     it { is_expected.to belong_to :merchant }
     it { is_expected.to have_many :invoices }
+  end
+
+  describe "class methods" do
+    it ".with_use_count" do
+      coupon = create(:coupon)
+
+      expect(coupon.with_use_count.use_count).to eq(0)
+
+      create(:invoice, coupon: coupon)
+
+      expect(coupon.with_use_count.use_count).to eq(1)
+    end
   end
 end
