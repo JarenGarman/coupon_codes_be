@@ -26,11 +26,11 @@ describe Coupon, type: :model do
     it ".with_use_count" do
       coupon = create(:coupon)
 
-      expect(coupon.with_use_count.use_count).to eq(0)
+      expect(Coupon.with_use_count[0].use_count).to eq(0)
 
       create(:invoice, coupon: coupon)
 
-      expect(coupon.with_use_count.use_count).to eq(1)
+      expect(Coupon.with_use_count[0].use_count).to eq(1)
     end
   end
 end
