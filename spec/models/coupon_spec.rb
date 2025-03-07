@@ -10,6 +10,7 @@ describe Coupon, type: :model do
     it { is_expected.to validate_presence_of :code }
     it { is_expected.to validate_uniqueness_of :code }
     it { is_expected.to validate_presence_of :discount_type }
+    it { is_expected.to validate_inclusion_of(:discount_type).in_array(["percent", "flat"]) }
     it { is_expected.to validate_presence_of :value }
     it { is_expected.to validate_numericality_of :value }
   end
