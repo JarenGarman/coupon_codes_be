@@ -234,6 +234,34 @@ RSpec.describe "Merchant coupons endpoints" do
   end
 
   describe "update" do
+    it "can update a coupon" do
+      merchant = create(:merchant)
+      coupon = create(:coupon, merchant: merchant)
+      coupon_params = {
+        name: Faker::Commerce.promotion_code(digits: 2),
+        code: Faker::Commerce.unique.promotion_code,
+        discount_type: ["percent", "flat"].sample,
+        value: Faker::Commerce.price(range: 0.01..99.99)
+      }
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon_params)
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(json[:data]).to be_a(Hash)
+      expect(json[:data][:id]).to be_a(String)
+      expect(json[:data][:type]).to eq("coupon")
+      expect(json[:data][:attributes]).to include(
+        name: coupon_params[:name],
+        code: coupon_params[:code],
+        discount_type: coupon_params[:discount_type],
+        value: coupon_params[:value],
+        active?: true
+      )
+    end
+
     it "can deactivate a coupon" do
       merchant = create(:merchant)
       coupon = create(:coupon, merchant: merchant)
