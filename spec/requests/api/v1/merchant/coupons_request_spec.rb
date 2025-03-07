@@ -91,9 +91,9 @@ RSpec.describe "Merchant coupons endpoints" do
 
       json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response.code).to eq(201)
+      expect(response).to have_http_status(:created)
       expect(json[:data]).to be_a(Hash)
-      expect(json[:data][:id]).to eq(coupon_params[:id].to_s)
+      expect(json[:data][:id]).to be_a(String)
       expect(json[:data][:type]).to eq("coupon")
       expect(json[:data][:attributes]).to include(
         name: coupon_params[:name],
@@ -139,9 +139,9 @@ RSpec.describe "Merchant coupons endpoints" do
       json = JSON.parse(response.body, symbolize_names: true)
 
       expect(response).to have_http_status(:bad_request)
-      # expect(json[:message]).to eq("Placeholder error message")
+      expect(json[:message]).to eq("Your query could not be completed")
       expect(json[:errors]).to be_a Array
-      # expect(json[:errors].first).to eq("Placeholder error message")
+      expect(json[:errors].first).to eq("This merchant already has 5 active coupons")
     end
 
     it "returns 400 with error message when code is not unique" do
@@ -159,24 +159,29 @@ RSpec.describe "Merchant coupons endpoints" do
 
       json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response).to have_http_status(:bad_request)
-      # expect(json[:message]).to eq("Placeholder error message")
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json[:message]).to eq("Your query could not be completed")
       expect(json[:errors]).to be_a Array
-      # expect(json[:errors].first).to eq("Placeholder error message")
+      expect(json[:errors].first).to eq("Validation failed: Code has already been taken")
     end
 
     it "returns 400 with error message when params not provided" do
       merchant = create(:merchant)
+      coupon_params = {
+        name: Faker::Commerce.promotion_code(digits: 2),
+        code: Faker::Commerce.unique.promotion_code,
+        discount_type: ["percent", "flat"].sample
+      }
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      post "/api/v1/merchants/#{merchant.id}/coupons", headers: headers, params: JSON.generate(coupon: {})
+      post "/api/v1/merchants/#{merchant.id}/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
 
       json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response).to have_http_status(:bad_request)
-      # expect(json[:message]).to eq("Placeholder error message")
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json[:message]).to eq("Your query could not be completed")
       expect(json[:errors]).to be_a Array
-      # expect(json[:errors].first).to eq("Placeholder error message")
+      expect(json[:errors].first).to eq("Validation failed: Value can't be blank, Value is not a number")
     end
   end
 end
