@@ -13,14 +13,14 @@ RSpec.describe "Merchant coupons endpoints" do
 
       expect(response).to be_successful
       expect(json[:data]).to be_a(Hash)
-      expect(json[:data][:id]).to eq(coupon.id)
+      expect(json[:data][:id]).to eq(coupon.id.to_s)
       expect(json[:data][:type]).to eq("coupon")
       expect(json[:data][:attributes]).to include(
         name: coupon.name,
         code: coupon.code,
         discount_type: coupon.discount_type,
         value: coupon.value,
-        active: coupon.active,
+        active?: coupon.active?,
         merchant_id: merchant.id,
         use_count: 0
       )
@@ -47,7 +47,7 @@ RSpec.describe "Merchant coupons endpoints" do
       expect(response).to have_http_status(:not_found)
       expect(json[:message]).to eq("Your query could not be completed")
       expect(json[:errors]).to be_a Array
-      expect(json[:errors].first).to eq("Couldn't find Coupon with 'id'=0")
+      expect(json[:errors].first).to eq("Couldn't find Coupon with 'id'=0 [WHERE \"coupons\".\"merchant_id\" = $1]")
     end
   end
 end
