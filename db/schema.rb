@@ -20,6 +20,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_06_233421) do
     t.string "discount_type"
     t.float "value"
     t.boolean "active?"
+    t.integer "use_count"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "merchant_id", null: false
