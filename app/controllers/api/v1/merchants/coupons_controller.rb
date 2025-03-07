@@ -2,9 +2,14 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   rescue_from ActionController::ParameterMissing do |e|
     render json: ErrorSerializer.format_errors([e.message]), status: :unprocessable_entity
   end
+
   def index
     merchant = Merchant.find(params[:merchant_id])
-    render json: CouponSerializer.new(merchant.coupons.with_use_count)
+    coupons = merchant.coupons
+    if params[:active] && ["true", "false"].include?(params[:active].downcase)
+      coupons = coupons.active_filter(params[:active].downcase)
+    end
+    render json: CouponSerializer.new(coupons.with_use_count)
   end
 
   def show

@@ -12,4 +12,8 @@ class Coupon < ApplicationRecord
       .select("coupons.*, COUNT(invoices.id) AS use_count")
       .group("coupons.id")
   end
+
+  def self.active_filter(active_param)
+    where(active?: ActiveModel::Type::Boolean.new.cast(active_param))
+  end
 end
