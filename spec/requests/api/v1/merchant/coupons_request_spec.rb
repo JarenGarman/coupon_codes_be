@@ -21,7 +21,6 @@ RSpec.describe "Merchant coupons endpoints" do
         discount_type: coupon.discount_type,
         value: coupon.value,
         active?: coupon.active?,
-        merchant_id: merchant.id,
         use_count: 0
       )
     end
