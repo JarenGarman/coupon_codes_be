@@ -19,4 +19,11 @@ class ErrorSerializer
       errors: ["This merchant already has 5 active coupons"]
     }
   end
+
+  def self.pending_invoices_response
+    {
+      message: "Your query could not be completed",
+      errors: ["Cannot deactivate coupon with pending invoices"]
+    }
+  end
 end
