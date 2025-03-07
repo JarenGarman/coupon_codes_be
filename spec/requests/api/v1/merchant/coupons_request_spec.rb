@@ -25,6 +25,54 @@ RSpec.describe "Merchant coupons endpoints" do
         expect(coupon[:attributes][:use_count]).to eq(0)
       end
     end
+
+    it "can return only active coupons" do
+      merchant = create(:merchant)
+      create_list(:coupon, 10, active?: false, merchant: merchant)
+      create_list(:coupon, 5, merchant: merchant)
+
+      get "/api/v1/merchants/#{merchant.id}/coupons?active=true"
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(json[:data]).to be_an(Array)
+      expect(json[:data].length).to eq(5)
+      json[:data].each do |coupon|
+        expect(coupon[:id]).to be_a(String)
+        expect(coupon[:type]).to eq("coupon")
+        expect(coupon[:attributes][:name]).to be_a(String)
+        expect(coupon[:attributes][:code]).to be_a(String)
+        expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
+        expect(coupon[:attributes][:value]).to be_a(Float)
+        expect(coupon[:attributes][:active?]).to be(true)
+        expect(coupon[:attributes][:use_count]).to eq(0)
+      end
+    end
+
+    it "can return only inactive coupons" do
+      merchant = create(:merchant)
+      create_list(:coupon, 10, active?: false, merchant: merchant)
+      create_list(:coupon, 5, merchant: merchant)
+
+      get "/api/v1/merchants/#{merchant.id}/coupons?active=false"
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(json[:data]).to be_an(Array)
+      expect(json[:data].length).to eq(5)
+      json[:data].each do |coupon|
+        expect(coupon[:id]).to be_a(String)
+        expect(coupon[:type]).to eq("coupon")
+        expect(coupon[:attributes][:name]).to be_a(String)
+        expect(coupon[:attributes][:code]).to be_a(String)
+        expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
+        expect(coupon[:attributes][:value]).to be_a(Float)
+        expect(coupon[:attributes][:active?]).to be(false)
+        expect(coupon[:attributes][:use_count]).to eq(0)
+      end
+    end
   end
 
   describe "show" do
