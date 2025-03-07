@@ -36,8 +36,8 @@ describe Coupon, type: :model do
       create_list(:coupon, 10, active?: false)
       create_list(:coupon, 5)
 
-      expect(Coupon.filter_active("true").length).to eq(5)
-      expect(Coupon.filter_active("false").length).to eq(10)
+      expect(Coupon.active_filter("true").length).to eq(5)
+      expect(Coupon.active_filter("false").length).to eq(10)
     end
   end
 end
