@@ -66,12 +66,10 @@ RSpec.describe "Merchant coupons endpoints" do
       json[:data].each do |coupon|
         expect(coupon[:id]).to be_a(String)
         expect(coupon[:type]).to eq("coupon")
-        expect(coupon[:attributes]).to have_attributes(
-          name: a_string,
-          code: a_string,
-          value: a_value
-        )
+        expect(coupon[:attributes][:name]).to be_a(String)
+        expect(coupon[:attributes][:code]).to be_a(String)
         expect(coupon[:attributes][:discount_type]).to eq("percent").or eq("flat")
+        expect(coupon[:attributes][:code]).to be_a(Float)
         expect(coupon[:attributes][:active?]).to be(true).or be(false)
       end
     end
