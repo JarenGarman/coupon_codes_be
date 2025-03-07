@@ -1,4 +1,7 @@
 class Api::V1::Merchants::CouponsController < ApplicationController
+  rescue_from ActionController::ParameterMissing do |e|
+    render json: ErrorSerializer.format_errors([e.message]), status: :unprocessable_entity
+  end
   def index
     merchant = Merchant.find(params[:merchant_id])
     render json: CouponSerializer.new(merchant.coupons.with_use_count)
@@ -15,22 +18,50 @@ class Api::V1::Merchants::CouponsController < ApplicationController
       render json: ErrorSerializer.too_many_active_coupons_response, status: :bad_request
       return
     end
-    coupon = merchant.coupons.create!(coupon_params) # safe to use create! here because our exception handler will gracefully handle exception
+    coupon = merchant.coupons.create!(create_params) # safe to use create! here because our exception handler will gracefully handle exception
     render json: CouponSerializer.new(coupon), status: :created
+  end
+
+  def update
+    merchant = Merchant.find(params[:merchant_id])
+    coupon = merchant.coupons.with_use_count.find(params[:id])
+    if update_params[:active?] == true
+      if active_merchant_coupons(merchant) >= 5
+        render json: ErrorSerializer.too_many_active_coupons_response, status: :bad_request
+        return
+      end
+    elsif pending_invoices?(coupon)
+      render json: ErrorSerializer.pending_invoices_response, status: :bad_request
+      return
+    end
+    coupon.update(update_params)
+    render json: CouponSerializer.new(coupon)
   end
 
   private
 
-  def coupon_params
+  def create_params
     params
       .require(:coupon)
       .permit(:name, :code, :discount_type, :value)
       .with_defaults(active?: true)
   end
 
+  def update_params
+    params
+      .require(:coupon)
+      .permit(:active?)
+  end
+
   def active_merchant_coupons(merchant)
     merchant.coupons.count do |coupon|
       coupon.active?
+    end
+  end
+
+  def pending_invoices?(coupon)
+    coupon.invoices.any? do |invoice|
+      invoice.status == "packaged"
     end
   end
 end
