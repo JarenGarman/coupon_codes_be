@@ -293,7 +293,7 @@ RSpec.describe "Merchant coupons endpoints" do
     it "returns 400 and error message when deactivating coupon with pending invoices" do
       merchant = create(:merchant)
       coupon = create(:coupon, merchant: merchant)
-      create(:invoice, status: "pending", merchant: merchant, coupon: coupon)
+      create(:invoice, status: "packaged", merchant: merchant, coupon: coupon)
       headers = {"CONTENT_TYPE" => "application/json"}
 
       patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", headers: headers, params: JSON.generate(coupon: {active?: false})
