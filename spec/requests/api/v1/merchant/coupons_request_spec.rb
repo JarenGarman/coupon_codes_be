@@ -287,7 +287,7 @@ RSpec.describe "Merchant coupons endpoints" do
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json[:message]).to eq("Your query could not be completed")
       expect(json[:errors]).to be_a Array
-      expect(json[:errors].first).to eq("Validation failed: Active? can't be blank")
+      expect(json[:errors].first).to eq("param is missing or the value is empty: coupon")
     end
 
     it "returns 400 and error message when deactivating coupon with pending invoices" do
