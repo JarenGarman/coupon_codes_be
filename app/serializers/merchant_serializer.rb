@@ -14,7 +14,7 @@ class MerchantSerializer
 
   attributes :invoice_coupon_count do |merchant|
     merchant.invoices.count do |invoice|
-      !invoice.coupon_id.nil?
+      invoice.coupon_id
     end
   end
 end
