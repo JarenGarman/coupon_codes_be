@@ -7,7 +7,5 @@ class Coupon < ApplicationRecord
   belongs_to :merchant
   has_many :invoices
 
-  def self.active_filter(active_param)
-    where(active: ActiveModel::Type::Boolean.new.cast(active_param))
-  end
+  scope :active_filter, ->(bool) { where(active: bool) }
 end
