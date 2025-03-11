@@ -19,7 +19,7 @@ class Api::V1::Merchants::CouponsController < ApplicationController
 
   def create
     merchant = Merchant.find(params[:merchant_id])
-    if active_merchant_coupons(merchant) >= 5
+    if max_active_coupons(merchant)
       render json: ErrorSerializer.too_many_active_coupons_response, status: :bad_request
       return
     end
@@ -30,7 +30,7 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   def update
     merchant = Merchant.find(params[:merchant_id])
     coupon = merchant.coupons.find(params[:id])
-    if update_params[:active] == true && active_merchant_coupons(merchant) >= 5
+    if update_params[:active] == true && max_active_coupons(merchant)
       render json: ErrorSerializer.too_many_active_coupons_response, status: :bad_request
       return
     elsif update_params[:active] == false && pending_invoices?(coupon)
@@ -56,15 +56,11 @@ class Api::V1::Merchants::CouponsController < ApplicationController
       .permit(:name, :code, :discount_type, :value, :active)
   end
 
-  def active_merchant_coupons(merchant)
-    merchant.coupons.count do |coupon|
-      coupon.active
-    end
+  def max_active_coupons(merchant)
+    merchant.coupons.active_filter(true).length >= 5
   end
 
   def pending_invoices?(coupon)
-    coupon.invoices.any? do |invoice|
-      invoice.status == "packaged"
-    end
+    coupon.invoices.where(status: "packaged").length > 0
   end
 end
